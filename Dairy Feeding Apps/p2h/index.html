@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P2H Alat Berat</title>
+    <style>
+        :root { --primary:#1a73e8; --secondary:#00c6ff; --success:#28a745; --text:#1f2937; --muted:#6b7280; --glass:rgba(255,255,255,.78); }
+        * { box-sizing: border-box; }
+        body { font-family:'Segoe UI',sans-serif; min-height:100vh; margin:0; padding:18px; color:var(--text); background: radial-gradient(circle at top left, rgba(0,198,255,.35), transparent 32%), radial-gradient(circle at bottom right, rgba(26,115,232,.38), transparent 30%), linear-gradient(135deg,#eef6ff 0%,#f7fbff 45%,#e9f0ff 100%); overflow-x:hidden; }
+        body::before, body::after { content:''; position:fixed; width:260px; height:260px; border-radius:50%; filter:blur(8px); opacity:.23; pointer-events:none; animation:floatGlow 9s ease-in-out infinite alternate; z-index:-1; }
+        body::before { background:#00c6ff; top:8%; left:-80px; }
+        body::after { background:#1a73e8; right:-90px; bottom:8%; animation-delay:1.5s; }
+        .container { max-width:540px; background:var(--glass); padding:24px; border-radius:24px; box-shadow:0 24px 60px rgba(26,115,232,.20),0 4px 16px rgba(0,0,0,.08); margin:auto; border:1px solid rgba(255,255,255,.75); backdrop-filter:blur(16px); animation:slideUp .75s ease both; position:relative; overflow:hidden; }
+        .container::before { content:''; position:absolute; inset:0; background:linear-gradient(120deg,transparent,rgba(255,255,255,.45),transparent); transform:translateX(-100%); animation:shine 4.5s ease-in-out infinite; pointer-events:none; }
+        h2 { text-align:center; color:var(--primary); margin:2px 0 5px; font-size:27px; letter-spacing:.3px; text-shadow:0 8px 22px rgba(26,115,232,.18); }
+        .sub { text-align:center; font-size:12px; color:var(--muted); margin-bottom:22px; }
+        label { display:block; margin-top:16px; font-weight:700; font-size:13px; color:#334155; }
+        input, select, textarea { width:100%; padding:13px 14px; margin-top:6px; border:1px solid rgba(26,115,232,.14); border-radius:13px; font-size:16px; background:rgba(255,255,255,.86); box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 8px 18px rgba(15,23,42,.04); transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease; outline:none; }
+        input:focus, select:focus, textarea:focus { border-color:var(--primary); background:#fff; transform:translateY(-1px); box-shadow:0 0 0 4px rgba(26,115,232,.13),0 12px 24px rgba(26,115,232,.10); }
+        .grid { display:flex; gap:12px; }
+        .check-item { display:flex; justify-content:space-between; align-items:center; padding:12px; margin:10px 0; border:1px solid rgba(26,115,232,.10); border-radius:15px; background:rgba(255,255,255,.62); box-shadow:0 8px 20px rgba(15,23,42,.04); animation:fadeIn .45s ease both; transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease; }
+        .check-item:hover { transform:translateY(-3px) scale(1.01); border-color:rgba(26,115,232,.28); box-shadow:0 16px 28px rgba(26,115,232,.12); }
+        .check-name { font-size:14px; width:64%; font-weight:600; }
+        .check-item select { width:32% !important; padding:8px !important; margin-top:0; font-size:13px; font-weight:700; }
+        #checkListContainer { margin-top:22px !important; border-top:none !important; padding-top:4px; position:relative; }
+        #checkListContainer::before { content:'Checklist Pemeriksaan'; display:block; margin:4px 0 12px; padding:10px 12px; border-radius:14px; color:#fff; font-weight:800; font-size:14px; background:linear-gradient(135deg,var(--primary),var(--secondary)); box-shadow:0 12px 25px rgba(26,115,232,.22); }
+        button { width:100%; padding:16px; background:linear-gradient(135deg,#22c55e,#16a34a); color:white; border:none; border-radius:15px; margin-top:26px; font-size:16px; font-weight:800; letter-spacing:.5px; cursor:pointer; box-shadow:0 15px 30px rgba(34,197,94,.28); transition:transform .2s ease,box-shadow .2s ease,filter .2s ease; position:relative; overflow:hidden; }
+        button::after { content:''; position:absolute; inset:0; background:linear-gradient(120deg,transparent,rgba(255,255,255,.35),transparent); transform:translateX(-100%); transition:transform .55s ease; }
+        button:hover { transform:translateY(-3px); box-shadow:0 20px 36px rgba(34,197,94,.34); filter:brightness(1.03); }
+        button:hover::after { transform:translateX(100%); }
+        button:active { transform:translateY(0) scale(.99); }
+        button:disabled { background:#cbd5e1; box-shadow:none; cursor:not-allowed; }
+        #loading { display:none; text-align:center; font-weight:800; color:var(--primary); margin-top:14px; }
+        #loading::before { content:''; display:inline-block; width:16px; height:16px; margin-right:8px; border-radius:50%; border:3px solid rgba(26,115,232,.2); border-top-color:var(--primary); vertical-align:-3px; animation:spin .75s linear infinite; }
+        .toast { position:fixed; left:50%; bottom:22px; transform:translate(-50%,30px); padding:13px 16px; color:#fff; background:linear-gradient(135deg,#16a34a,#22c55e); border-radius:999px; font-weight:800; box-shadow:0 18px 35px rgba(22,163,74,.25); opacity:0; pointer-events:none; transition:opacity .25s ease,transform .25s ease; z-index:99; max-width:92%; text-align:center; }
+        .toast.show { opacity:1; transform:translate(-50%,0); }
+        .toast.error { background:linear-gradient(135deg,#ef4444,#f97316); }
+        @keyframes slideUp { from { opacity:0; transform:translateY(28px) scale(.98); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes shine { 0%,55% { transform:translateX(-110%); } 100% { transform:translateX(110%); } }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @keyframes floatGlow { from { transform:translateY(0) scale(1); } to { transform:translateY(28px) scale(1.08); } }
+        @media (max-width:520px) { body{padding:12px;} .container{padding:19px;border-radius:20px;} .grid{flex-direction:column;gap:0;} h2{font-size:24px;} .check-name{width:60%;} .check-item select{width:36% !important;} }
+</style>
+
+<meta name="theme-color" content="#1a73e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="P2H Alat Berat">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="/p2h/manifest.json?v=1">
+<link rel="icon" type="image/png" sizes="192x192" href="/p2h/icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/p2h/icons/apple-touch-icon.png">
+
+</head>
+<body>
+
+<div class="container">
+    <h2>Daily Activity (P2H)</h2>
+    <p class="sub">Loader & Traktor Dairy Farm</p>
+
+    <form id="p2hForm">
+        <label>Shift</label>
+        <select name="shift" required>
+            <option value="Shift 1">Shift 1</option>
+            <option value="Shift 2">Shift 2</option>
+            <option value="Shift 3">Shift 3</option>
+        </select>
+
+        <label>Nama Operator</label>
+        <select name="operator" id="operatorSelect" required>
+            <option value="">Memuat Nama...</option>
+        </select>
+
+        <div class="grid">
+            <div style="flex:1">
+                <label>Unit Alat</label>
+                <select name="alat" id="unitSelect" required>
+                    <option value="">Memuat Unit...</option>
+                </select>
+            </div>
+            <div style="flex:1">
+                <label>HM (Hour Meter)</label>
+                <input type="number" name="hm" step="0.1" required>
+            </div>
+        </div>
+
+        <div id="checkListContainer" style="margin-top:20px; border-top: 2px solid #1a73e8;"></div>
+
+        <label>Catatan</label>
+        <textarea name="catatan" rows="3"></textarea>
+
+        <button type="submit" id="submitBtn">KIRIM LAPORAN</button>
+        <div id="loading">Sedang memproses...</div>
+        <div id="toast" class="toast"></div>
+    </form>
+</div>
+
+<script>
+    // 1. GANTI URL INI DENGAN URL WEB APP (EXEC) ANDA
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzXuMPl9IlRjle82fBYyInTlo1s1G8ePDAhtc17uN3mQb8VdiaBkvgm4d-mH1Kt7IeF/exec";
+
+    const poinP2H = [
+        "Oli Mesin", "Visual Fuel/Sensor/Seal", "Water Separator", 
+        "Aki (Jamur +/-)", "Level Coolant", "Oli Transmisi", 
+        "Visual Body (Ka, Ki, Bel)", "Kondisi Ban", "Lampu Alat"
+    ];
+
+    // Load Poin P2H ke Form
+    const container = document.getElementById('checkListContainer');
+    poinP2H.forEach((item, index) => {
+        container.innerHTML += `
+            <div class="check-item" style="animation-delay:${index * 0.05}s">
+                <span class="check-name">${index + 1}. ${item}</span>
+                <select name="p${index + 1}" style="width:30%; padding:5px;">
+                    <option value="OK">OK</option>
+                    <option value="CHECK">CHECK</option>
+                </select>
+            </div>`;
+    });
+
+    // 2. Ambil Data Operator & Unit dari Spreadsheet saat halaman dibuka
+    window.onload = () => {
+        fetch(`${SCRIPT_URL}?action=getData`)
+        .then(res => res.json())
+        .then(data => {
+            const opSelect = document.getElementById('operatorSelect');
+            const unitSelect = document.getElementById('unitSelect');
+            
+            opSelect.innerHTML = '<option value="">-- Pilih Operator --</option>';
+            data.operators.forEach(op => opSelect.innerHTML += `<option value="${op}">${op}</option>`);
+            
+            unitSelect.innerHTML = '<option value="">-- Pilih Unit --</option>';
+            data.units.forEach(u => unitSelect.innerHTML += `<option value="${u}">${u}</option>`);
+        });
+    };
+
+    // 3. Kirim Data ke Spreadsheet
+    const showToast = (message, type = 'success') => {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = `toast show ${type === 'error' ? 'error' : ''}`;
+        setTimeout(() => toast.className = 'toast', 2500);
+    };
+
+    const form = document.getElementById('p2hForm');
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        document.getElementById('submitBtn').disabled = true;
+        document.getElementById('loading').style.display = 'block';
+
+        fetch(SCRIPT_URL, { method: 'POST', body: new FormData(form)})
+        .then(res => {
+            showToast('Laporan P2H Berhasil Dikirim!');
+            form.reset();
+            setTimeout(() => location.reload(), 1200); // Refresh untuk ambil data terbaru
+        })
+        .catch(err => {
+            showToast('Gagal! Periksa koneksi atau URL Script.', 'error');
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('loading').style.display = 'none';
+        });
+    });
+</script>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/p2h/service-worker.js?v=1', { scope: '/p2h/' })
+            .then(() => console.log('P2H Alat Berat PWA ready'))
+            .catch(err => console.log('Service Worker error:', err));
+    });
+}
+</script>
+
+</body>
+</html>
